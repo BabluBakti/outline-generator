@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Learners Point Course Outline Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   VARIABLES & RESET
+   ========================================================= */
+:root {
+  --teal:   #2a9d8f;
+  --blue:   #5b6ee1;
+  --orange: #e76f2a;
+  --dark:   #1a1a1a;
+  --gray:   #555;
+  --border: #e2e2e2;
+  --bg:     #f0f2f5;
+  --white:  #ffffff;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'DM Sans', sans-serif; }
+body { background: var(--bg); color: var(--dark); }
+
+/* =========================================================
+   TOOLBAR
+   ========================================================= */
+.toolbar {
+  position: sticky; top: 0; z-index: 200;
+  background: var(--white);
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.toolbar-logo { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+.toolbar-logo span { font-size: 16px; font-weight: 700; color: var(--dark); }
+.toolbar-logo .dot { color: var(--orange); }
+
+.btn {
+  border: 1px solid var(--border); background: var(--white);
+  padding: 8px 16px; border-radius: 8px; cursor: pointer;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  transition: all 0.15s; color: var(--dark);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:hover { background: var(--bg); border-color: #ccc; }
+.btn.primary { background: var(--dark); color: #fff; border-color: var(--dark); }
+.btn.primary:hover { background: #333; }
+.font-select {
+  border: 1px solid var(--border); background: var(--white);
+  padding: 8px 12px; border-radius: 8px; font-size: 13px;
+  font-weight: 600; cursor: pointer; font-family: inherit;
+  min-width: 140px;
+}
+
+/* =========================================================
+   LAYOUT
+   ========================================================= */
+.wrap { max-width: 1260px; margin: 20px auto; padding: 0 20px; }
+.panel { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; }
+@media (max-width: 1100px) { .panel { grid-template-columns: 1fr; } }
+
+/* =========================================================
+   FORM PANEL
+   ========================================================= */
+.form-panel {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 14px; max-height: 88vh; overflow-y: auto;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  position: sticky; top: 70px;
+}
+.form-section { border-bottom: 1px solid var(--border); }
+.form-section:last-child { border-bottom: none; }
+
+.section-toggle {
+  width: 100%; text-align: left; background: none; border: none;
+  padding: 14px 18px; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.section-toggle:hover { background: #fafafa; }
+.section-toggle-left { display: flex; align-items: center; gap: 10px; }
+.section-num {
+  width: 24px; height: 24px; border-radius: 6px;
+  font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; flex-shrink: 0;
+}
+.num-blue   { background: var(--blue); }
+.num-teal   { background: var(--teal); }
+.num-orange { background: var(--orange); }
+.num-dark   { background: var(--dark); }
+
+.section-toggle-title {
+  font-size: 13px; font-weight: 700; color: var(--dark);
+}
+.section-toggle-sub {
+  font-size: 11px; color: #888; margin-top: 1px;
+}
+.chevron {
+  font-size: 10px; color: #aaa;
+  transition: transform 0.2s;
+}
+.chevron.open { transform: rotate(180deg); }
+
+.section-body { display: none; padding: 14px 18px 18px; }
+.section-body.open { display: block; }
+
+.field-label {
+  display: block; font-size: 11px; font-weight: 700;
+  color: #888; text-transform: uppercase; letter-spacing: 0.4px;
+  margin: 13px 0 5px;
+}
+.field-label:first-child { margin-top: 0; }
+.section-body input,
+.section-body textarea {
+  width: 100%; padding: 9px 11px;
+  border: 1px solid var(--border); border-radius: 7px;
+  font: 13px/1.5 'DM Sans', sans-serif; color: var(--dark);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  background: #fdfdfd;
+}
+.section-body input:focus,
+.section-body textarea:focus {
+  outline: none; border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(91,110,225,0.1);
+  background: #fff;
+}
+.section-body textarea { min-height: 80px; resize: vertical; }
+.hint {
+  font-size: 11px; color: #999; margin-top: 5px; line-height: 1.55;
+  background: #f9f9f9; padding: 7px 10px; border-radius: 5px;
+  border-left: 2px solid var(--border);
+}
+
+/* =========================================================
+   CANVAS
+   ========================================================= */
+.canvas {
+  background: #c8cdd4;
+  padding: 20px; border-radius: 14px;
+  overflow-y: auto; max-height: 88vh;
+}
+
+/* =========================================================
+   A4 PAGE BASE
+   ========================================================= */
+.page {
+  width: 794px; height: 1123px;
+  background: var(--white);
+  margin: 0 auto 16px; position: relative; overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.14);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+.page-fixed {
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+
+/* ---- Image references ---- */
+.bg-cover       { background-image: url('1.png'); }
+.bg-toc         { background-image: url('2.png'); }
+.bg-insight     { background-image: url('3.png'); }
+.bg-details     { background-image: url('4.png'); }
+.bg-objective   { background-image: url('5.png'); }
+.bg-impact      { background-image: url('6.png'); }
+.bg-modules     { background-image: url('7.png'); }
+.bg-pedagogy1   { background-image: url('8.png'); }
+.bg-pedagogy2   { background-image: url('9.png'); }
+.bg-evaluation  { background-image: url('10.png'); }
+.bg-whoweare    { background-image: url('11.png'); }
+.bg-getintouch  { background-image: url('12.png'); }
+.bg-trustedby   { background-image: url('13.png'); }
+.bg-recognized  { background-image: url('14.png'); }
+
+/* =========================================================
+   PAGE 1 – COVER OVERLAY
+   ========================================================= */
+.cover-overlay {
+  position: absolute;
+  top: 308px;
+  left: 54px; right: 54px;
+}
+.cover-title {
+  font-size: 44.52px; font-weight: 700; line-height: 1.05;
+  color: var(--dark); margin-bottom: 14px;
+  letter-spacing: -1px;
+}
+.cover-title .dot { color: var(--orange); }
+.cover-subtitle {
+  font-size: 22.55px; font-weight: 300; color: var(--dark);
+  line-height: 1.5; margin-bottom: 24px;
+}
+.cover-rule { height: 1px; background: rgba(0,0,0,0.12); margin-bottom: 18px; }
+.cover-duration {
+  font-size: 15px; color: var(--dark);
+}
+.cover-duration strong { font-weight: 700; }
+
+/* =========================================================
+   PAGE 2 – TOC PAGE NUMBERS (EXACT LINE ALIGNMENT)
+   ========================================================= */
+.toc-overlay{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+.toc-page-no{
+  position:absolute;
+  right:48px;
+  font-family:'DM Sans', sans-serif;
+  font-size:20px;
+  font-weight:700;
+  color:var(--dark);
+  line-height:1;
+  min-width:36px;
+  text-align:right;
+}
+#tocInsight    { top: 301px; }
+#tocObjective  { top: 399px; }
+#tocImpact     { top: 497px; }
+#tocModules    { top: 595px; }
+#tocPedagogy   { top: 693px; }
+#tocEvaluation { top: 791px; }
+#tocTrusted    { top: 889px; }
+
+/* =========================================================
+   PAGES 3,5,6 – CONTENT OVERLAY
+   ========================================================= */
+.content-overlay {
+  position: absolute;
+  top: 245px; left: 64px; right: 64px; bottom: 78px;
+  overflow: hidden;
+}
+
+/* =========================================================
+   PAGE 4 – DETAILS OVERLAY
+   ========================================================= */
+.details-overlay {
+  position: absolute;
+  top: 52px; left: 60px; right: 60px; bottom: 78px;
+  overflow: hidden;
+}
+.details-summary {
+  font-size: 14px; font-weight: 700; line-height: 18px;
+  color: var(--dark); margin-bottom: 28px;
+}
+.details-table { width: 100%; border-collapse: collapse; font-size: 14px; border: 1px solid var(--border); }
+.details-table tr { border-bottom: 1px solid var(--border); }
+.details-table tr:last-child { border-bottom: none; }
+.details-table td {
+  padding: 14px 16px; vertical-align: top; line-height: 18px; color: #333;
+  font-weight: 400; border: 1px solid var(--border);
+}
+.details-table td.dt-label {
+  font-weight: 700; color: var(--dark); width: 190px;
+  border-right: 1px solid var(--border);
+}
+
+/* =========================================================
+   PAGE NUMBER FOOTER
+   ========================================================= */
+.page-num-overlay {
+  position: absolute;
+  bottom: 24px; right: 60px;
+  font-size: 12px; font-weight: 400;
+  color: #555;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* =========================================================
+   PROGRAM INSIGHT TEXT
+   ========================================================= */
+.insight-para {
+  font-size: 14px; line-height: 18px; color: var(--dark);
+  margin-bottom: 18px; text-align: left;
+  font-weight: 400;
+}
+.insight-para strong { font-weight: 700; }
+
+/* =========================================================
+   LEARNING OBJECTIVE
+   ========================================================= */
+.obj-intro {
+  font-size: 14px; line-height: 18px; color: var(--dark); margin-bottom: 20px;
+  font-weight: 400;
+}
+.obj-list { margin-bottom: 20px; }
+.obj-item { margin-bottom: 16px; }
+.obj-item-head {
+  font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 3px;
+}
+.obj-item-desc {
+  font-size: 14px; line-height: 18px; color: #333; font-weight: 300;
+}
+.obj-closing { font-size: 14px; line-height: 18px; color: var(--dark); font-weight: 400; }
+
+/* =========================================================
+   CAPABILITY IMPACT
+   ========================================================= */
+.impact-intro { font-size: 14px; line-height: 18px; color: var(--dark); margin-bottom: 20px; font-weight: 400; }
+.impact-row { display: flex; gap: 14px; margin-bottom: 16px; align-items: flex-start; }
+.impact-icon-box {
+  width: 42px; height: 42px; min-width: 42px; border-radius: 50px;
+  background: var(--teal); display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0;
+}
+.impact-check {
+  width: 20px; height: 20px; stroke: white; fill: none;
+}
+.impact-row-title { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 3px; }
+.impact-row-desc  { font-size: 14px; line-height: 18px; color: #333; font-weight: 300; }
+.impact-closing   { font-size: 14px; line-height: 18px; color: var(--dark); margin-top: 14px; font-weight: 400; }
+
+/* =========================================================
+   TRAINING MODULES TABLE
+   ========================================================= */
+.modules-wrap {
+  position: absolute;
+  top: 245px; left: 43px; right: 43px; bottom: 78px;
+  overflow: hidden;
+}
+.mod-table { width: 100%; border-collapse: collapse; font-size: 12.5px; line-height: 1.55; }
+.mod-table th {
+  text-align: left; font-size: 13px; font-weight: 600; color: var(--dark);
+  padding: 10px 12px; border: 1px solid #ccc;
+}
+.mod-table td { padding: 12px; border: 1px solid #ccc; vertical-align: top; }
+.mod-table .col-sno  { width: 52px; text-align: center; font-size: 17px; font-weight: 700; }
+.mod-table .col-mod  { width: 130px; font-weight: 700; font-size: 13px; color: var(--dark); }
+.mod-table .col-top,
+.mod-table .col-ex   { width: 275px; }
+.mod-table ul        { list-style: disc; padding-left: 15px; }
+.mod-table ul li     { margin: 3px 0; }
+.mod-table strong    { font-weight: 700; }
+
+/* =========================================================
+   PRINT
+   ========================================================= */
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: #fff; margin: 0; padding: 0; }
+  .toolbar, .form-panel { display: none !important; }
+  .panel { display: block; }
+  .canvas { background: #fff; padding: 0; max-height: none; overflow: visible; box-shadow: none; }
+  .page {
+    page-break-after: always; page-break-inside: avoid;
+    box-shadow: none; margin: 0; width: 794px; height: 1123px;
+  }
+  .wrap { max-width: 794px; padding: 0; margin: 0 auto; }
+  @page { size: A4 portrait; margin: 0; }
+}
+
+/* =========================================================
+   RICH TEXT FLOATING TOOLBAR (Canva-style)
+   ========================================================= */
+#richToolbar {
+  position: fixed;
+  display: none;
+  background: #18181b;
+  border-radius: 12px;
+  padding: 5px 8px;
+  gap: 3px;
+  align-items: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 9999;
+  user-select: none;
+  pointer-events: all;
+  transform: translateX(-50%);
+  transition: opacity 0.12s;
+}
+#richToolbar::after {
+  content: '';
+  position: absolute;
+  top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #18181b;
+}
+#richToolbar.visible { display: flex; }
+
+.rt-btn {
+  background: transparent;
+  border: none;
+  color: #e4e4e7;
+  width: 34px; height: 34px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s, color 0.12s;
+  font-family: 'DM Sans', sans-serif;
+  flex-shrink: 0;
+}
+.rt-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.rt-btn.rt-active { background: rgba(255,255,255,0.2); color: #fff; }
+.rt-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+.rt-divider { width: 1px; height: 22px; background: rgba(255,255,255,0.15); margin: 0 4px; flex-shrink: 0; }
+
+.rt-font-group {
+  display: flex; align-items: center; gap: 2px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 7px; padding: 2px;
+}
+.rt-font-display {
+  color: #e4e4e7; font-size: 12px; font-weight: 700;
+  min-width: 30px; text-align: center;
+  pointer-events: none; line-height: 1;
+}
+
+/* canvas contenteditable feedback */
+.canvas [contenteditable]:focus {
+  outline: none;
+}
+.canvas [contenteditable]:hover {
+  outline: 2px solid rgba(91,110,225,0.3);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.canvas [contenteditable]:focus-within,
+.canvas [contenteditable]:focus {
+  outline: 2px solid rgba(91,110,225,0.7);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* edit mode indicator chip */
+.editable-chip {
+  position: absolute;
+  top: -22px; right: 0;
+  background: var(--blue);
+  color: #fff;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   EXPORT MODAL
+   ========================================================= */
+#exportModal {
+  position: fixed; inset: 0;
+  background: rgba(10,10,15,0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 10000;
+  display: none;
+  align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+#exportModal.visible { display: flex; }
+#exportModal.shown { opacity: 1; }
+
+.modal-box {
+  background: #fff;
+  border-radius: 24px;
+  padding: 48px 52px 40px;
+  text-align: center;
+  max-width: 440px; width: 90%;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.35);
+  transform: scale(0.9) translateY(20px);
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+  overflow: hidden;
+}
+#exportModal.shown .modal-box {
+  transform: scale(1) translateY(0);
+}
+.modal-confetti-ring {
+  position: absolute; top: -60px; right: -60px;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(231,111,42,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.modal-confetti-ring2 {
+  position: absolute; bottom: -40px; left: -40px;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(91,110,225,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+.modal-icon-wrap {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
+  margin: 0 auto 22px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 24px rgba(91,110,225,0.2);
+}
+.modal-icon-wrap svg {
+  width: 38px; height: 38px;
+  stroke: var(--blue); fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+.modal-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: linear-gradient(90deg, var(--orange), #f4a261);
+  color: #fff; font-size: 11px; font-weight: 800;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 4px 12px; border-radius: 20px;
+  margin-bottom: 16px;
+}
+.modal-title {
+  font-size: 28px; font-weight: 800; color: var(--dark);
+  line-height: 1.15; margin-bottom: 10px;
+  font-family: 'DM Serif Display', serif;
+}
+.modal-title .modal-dot { color: var(--orange); }
+.modal-subtitle {
+  font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 28px;
+}
+.modal-bbv {
+  display: inline-block;
+  font-size: 11px; font-weight: 800; letter-spacing: 3px;
+  color: #bbb; text-transform: uppercase; margin-bottom: 28px;
+}
+.modal-actions { display: flex; gap: 10px; }
+.modal-btn {
+  flex: 1; padding: 13px 20px; border-radius: 12px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  border: none; font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.modal-btn-secondary {
+  background: #f4f4f5; color: #555;
+}
+.modal-btn-secondary:hover { background: #e4e4e7; }
+.modal-btn-primary {
+  background: var(--dark); color: #fff;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+}
+.modal-btn-primary:hover { background: #333; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+</style>
+</head>
+<body>
+
+<!-- ======= CANVA-STYLE RICH TEXT TOOLBAR ======= -->
+<div id="richToolbar">
+  <div class="rt-font-group">
+    <button class="rt-btn" id="rtDecrease" title="Decrease font size">
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <span class="rt-font-display" id="rtFontSize">14</span>
+    <button class="rt-btn" id="rtIncrease" title="Increase font size">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+  <div class="rt-divider"></div>
+  <button class="rt-btn" id="rtBold" title="Bold (Ctrl+B)" style="font-weight:900; font-size:15px;">B</button>
+  <button class="rt-btn" id="rtItalic" title="Italic (Ctrl+I)" style="font-style:italic; font-size:15px;">I</button>
+  <button class="rt-btn" id="rtUnderline" title="Underline (Ctrl+U)" style="text-decoration:underline; font-size:14px;">U</button>
+  <div class="rt-divider"></div>
+  <button class="rt-btn" id="rtAlignLeft" title="Align left">
+    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+  </button>
+  <button class="rt-btn" id="rtAlignCenter" title="Align center">
+    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+  </button>
+  <div class="rt-divider"></div>
+  <input type="color" id="rtColor" value="#1a1a1a" title="Text color"
+    style="width:28px;height:28px;border-radius:6px;border:2px solid rgba(255,255,255,0.2);cursor:pointer;background:none;padding:2px;">
+</div>
+
+<!-- ======= EXPORT MODAL ======= -->
+<div id="exportModal">
+  <div class="modal-box">
+    <div class="modal-confetti-ring"></div>
+    <div class="modal-confetti-ring2"></div>
+    <div class="modal-icon-wrap">
+      <svg viewBox="0 0 24 24">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </div>
+    <div class="modal-badge">✦ Ready to Export</div>
+    <div class="modal-title">Thanks for Downloading<span class="modal-dot">.</span></div>
+    <div class="modal-subtitle">Your brochure is ready to be exported as a PDF.<br>Make sure all pages look perfect before printing.</div>
+    <div class="modal-bbv">— Build by Bablu and Balpeye —</div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-secondary" id="modalCancel">Cancel</button>
+      <button class="modal-btn modal-btn-primary" id="modalPrint">⬇ Export PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="toolbar-logo">
+    <img src="logo2.png" alt="LP" style="height:28px">
+    <span> Balpeye <span class="dot">•</span> Bablu </span>
+  </div>
+  <input type="file" id="uploadWord" accept=".docx" style="display:none"/>
+  <button class="btn" id="uploadWordBtn">📄 Upload Word</button>
+  <select class="font-select" id="fontSelector">
+    <option value="'DM Sans', sans-serif">DM Sans (Default)</option>
+    <option value="'Inter', sans-serif">Inter</option>
+    <option value="'Poppins', sans-serif">Poppins</option>
+    <option value="'Montserrat', sans-serif">Montserrat</option>
+    <option value="'Open Sans', sans-serif">Open Sans</option>
+    <option value="'Roboto', sans-serif">Roboto</option>
+  </select>
+  <button class="btn" id="fillSample">Fill Sample</button>
+  <button class="btn" id="clearAll">Clear</button>
+  <button class="btn primary" id="exportPdf">⬇ Export PDF</button>
+</div>
+
+<div class="wrap">
+<div class="panel">
+
+  <div class="form-panel" id="formPanel">
+
+    <div class="form-section">
+      <button class="section-toggle" onclick="toggleSec(this)">
+        <div class="section-toggle-left">
+          <div class="section-num num-dark">1</div>
+          <div>
+            <div class="section-toggle-title">Cover Page</div>
+            <div class="section-toggle-sub">Title · Subtitle · Duration</div>
+          </div>
+        </div>
+        <span class="chevron open">▼</span>
+      </button>
+      <div class="section-body open">
+        <label class="field-label">Course Title</label>
+        <input id="f-title" placeholder="e.g., Next-Gen Leadership" />
+
+        <label class="field-label">Subtitle / Tagline</label>
+        <input id="f-subtitle" placeholder="e.g., Building confident, future-ready supervisors." />
+
+        <label class="field-label">Total Duration</label>
+        <input id="f-duration" placeholder="e.g., 2 Days" />
+      </div>
+    </div>
+
+    <div class="form-section">
+      <button class="section-toggle" onclick="toggleSec(this)">
+        <div class="section-toggle-left">
+          <div class="section-num num-blue">3</div>
+          <div>
+            <div class="section-toggle-title">Program Insight</div>
+            <div class="section-toggle-sub">Body paragraphs with **bold** support</div>
+          </div>
+        </div>
+        <span class="chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <label class="field-label">Body Text (blank line = new paragraph)</label>
+        <textarea id="f-insight" rows="9" placeholder="This programme is designed for **professionals who are ready to move forward** in their careers..."></textarea>
+        <p class="hint">Wrap text in **double asterisks** for bold</p>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <button class="section-toggle" onclick="toggleSec(this)">
+        <div class="section-toggle-left">
+          <div class="section-num num-dark">4</div>
+          <div>
+            <div class="section-toggle-title">Program Details</div>
+            <div class="section-toggle-sub">Summary + info table</div>
+          </div>
+        </div>
+        <span class="chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <label class="field-label">Summary Paragraph (supports **bold**)</label>
+        <textarea id="f-det-summary" rows="3" placeholder="**By the end of the programme, participants leave with a sharper perspective...**"></textarea>
+
+        <label class="field-label">Regions Served</label>
+        <input id="f-regions" placeholder="UAE, Saudi Arabia, Africa, MENA, and Europe" />
+
+        <label class="field-label">Course Duration</label>
+        <input id="f-det-duration" placeholder="2 Days of focused, structured, immersive development" />
+
+        <label class="field-label">Total Learning Hours</label>
+        <input id="f-hours" placeholder="16 Hours of facilitated, hands-on training" />
+
+        <label class="field-label">Key Benefits</label>
+        <textarea id="f-benefits" rows="2" placeholder="Participants walk away with sharper skills, greater self-awareness..."></textarea>
+
+        <label class="field-label">Value Addition & Impact</label>
+        <textarea id="f-value" rows="2" placeholder="Beyond individual growth, this programme creates a ripple effect..."></textarea>
+
+        <label class="field-label">Location</label>
+        <input id="f-location" placeholder="[Venue Name], [City] / Available Online" />
+
+        <label class="field-label">Date & Time</label>
+        <input id="f-datetime" placeholder="[Date] | [Start Time] — [End Time]" />
+      </div>
+    </div>
+
+    <div class="form-section">
+      <button class="section-toggle" onclick="toggleSec(this)">
+        <div class="section-toggle-left">
+          <div class="section-num num-orange">5</div>
+          <div>
+            <div class="section-toggle-title">Learning Objective</div>
+            <div class="section-toggle-sub">Intro · a–z items · Closing</div>
+          </div>
+        </div>
+        <span class="chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <label class="field-label">Intro Paragraph</label>
+        <textarea id="f-obj-intro" rows="2" placeholder="Effective leadership combines self-awareness, strong communication..."></textarea>
+
+        <label class="field-label">Objectives — one per line (Title | Description)</label>
+        <textarea id="f-objectives" rows="8" placeholder="Self-Awareness in Leadership | Understand your leadership style, strengths, and areas for improvement...&#10;Balancing Management and Leadership | Distinguish between managing tasks and leading people..."></textarea>
+        <p class="hint">Format: <strong>Title | Description</strong> — each on its own line</p>
+
+        <label class="field-label">Closing Paragraph</label>
+        <textarea id="f-obj-close" rows="2" placeholder="Strong leadership combines self-awareness, effective communication..."></textarea>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <button class="section-toggle" onclick="toggleSec(this)">
+        <div class="section-toggle-left">
+          <div class="section-num num-teal">6</div>
+          <div>
+            <div class="section-toggle-title">Capability Impact</div>
+            <div class="section-toggle-sub">Intro · checkmark items · Closing</div>
+          </div>
+        </div>
+        <span class="chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <label class="field-label">Intro Paragraph</label>
+        <textarea id="f-imp-intro" rows="3" placeholder="Every dirham spent on developing your people..."></textarea>
+
+        <label class="field-label">Impact Items — one per line (Title | Description)</label>
+        <textarea id="f-imp-items" rows="8" placeholder="Measurable performance improvement | participants return to the workplace with sharper skills...&#10;Reduced operational costs | better-trained teams make fewer errors..."></textarea>
+        <p class="hint">Format: <strong>Title | Description</strong> — each on its own line</p>
+
+        <label class="field-label">Closing Paragraph</label>
+        <textarea id="f-imp-close" rows="2" placeholder="Sustainable competitive advantage..."></textarea>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <button class="section-toggle" onclick="toggleSec(this)">
+        <div class="section-toggle-left">
+          <div class="section-num num-blue">7</div>
+          <div>
+            <div class="section-toggle-title">Training Modules</div>
+            <div class="section-toggle-sub">Table: Sno · Module · Topics · Exercises</div>
+          </div>
+        </div>
+        <span class="chevron">▼</span>
+      </button>
+      <div class="section-body">
+        <label class="field-label">Modules — one per line</label>
+        <textarea id="f-modules" rows="10" placeholder="Understanding Leadership vs. Management | Differentiate managing tasks; Understand leadership styles; Know when to lead vs. manage | Leadership style self-assessment.; Team role-play scenarios.; Reflection: leadership challenge journal."></textarea>
+        <p class="hint">Format: <strong>Module Name | Topic 1; Topic 2; Topic 3 | Exercise 1; Exercise 2</strong> — each module on its own line. Use **text** for bold in exercises.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="canvas" id="brochure">
+
+    <section class="page page-fixed bg-cover">
+      <div class="cover-overlay">
+        <div class="cover-title" id="pTitle" contenteditable="true" spellcheck="false">TITLE NAME<span class="dot">.</span></div>
+        <div class="cover-subtitle" id="pSubtitle" contenteditable="true" spellcheck="false">Subtitle goes here.</div>
+        <div class="cover-rule"></div>
+        <div class="cover-duration">Total Duration: <strong id="pDuration" contenteditable="true" spellcheck="false">—</strong></div>
+      </div>
+    </section>
+
+    <section class="page page-fixed bg-toc">
+      <div class="toc-overlay">
+        <span class="toc-page-no" id="tocInsight">01</span>
+        <span class="toc-page-no" id="tocObjective">03</span>
+        <span class="toc-page-no" id="tocImpact">04</span>
+        <span class="toc-page-no" id="tocModules">05</span>
+        <span class="toc-page-no" id="tocPedagogy">06</span>
+        <span class="toc-page-no" id="tocEvaluation">08</span>
+        <span class="toc-page-no" id="tocTrusted">11</span>
+      </div>
+    </section>
+
+    <section class="page page-fixed bg-insight">
+      <div class="content-overlay" id="pInsight" contenteditable="true" spellcheck="false"></div>
+      <div class="page-num-overlay">Page 01</div>
+    </section>
+
+    <section class="page page-fixed bg-details">
+      <div class="details-overlay">
+        <div class="details-summary" id="pDetSummary" contenteditable="true" spellcheck="false"></div>
+        <table class="details-table">
+          <tbody>
+            <tr><td class="dt-label">Regions Served</td><td id="pRegions" contenteditable="true" spellcheck="false"></td></tr>
+            <tr><td class="dt-label">Course Duration</td><td id="pDetDuration" contenteditable="true" spellcheck="false"></td></tr>
+            <tr><td class="dt-label">Total Learning Hours</td><td id="pHours" contenteditable="true" spellcheck="false"></td></tr>
+            <tr><td class="dt-label">Key Benefits</td><td id="pBenefits" contenteditable="true" spellcheck="false"></td></tr>
+            <tr><td class="dt-label">Value Addition &amp; Impact</td><td id="pValue" contenteditable="true" spellcheck="false"></td></tr>
+            <tr><td class="dt-label">Location</td><td id="pLocation" contenteditable="true" spellcheck="false"></td></tr>
+            <tr><td class="dt-label">Date &amp; Time</td><td id="pDatetime" contenteditable="true" spellcheck="false"></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="page-num-overlay">Page 02</div>
+    </section>
+
+    <section class="page page-fixed bg-objective">
+      <div class="content-overlay" id="pObjective" contenteditable="true" spellcheck="false"></div>
+      <div class="page-num-overlay">Page 03</div>
+    </section>
+
+    <section class="page page-fixed bg-impact">
+      <div class="content-overlay" id="pImpact" contenteditable="true" spellcheck="false"></div>
+      <div class="page-num-overlay">Page 04</div>
+    </section>
+
+    <div id="dynamicModules"></div>
+
+    <section class="page page-fixed bg-pedagogy1"><div class="page-num-overlay" id="fixedNum0"></div></section>
+    <section class="page page-fixed bg-pedagogy2"><div class="page-num-overlay" id="fixedNum1"></div></section>
+    <section class="page page-fixed bg-evaluation"><div class="page-num-overlay" id="fixedNum2"></div></section>
+    <section class="page page-fixed bg-whoweare"><div class="page-num-overlay" id="fixedNum3"></div></section>
+    <section class="page page-fixed bg-getintouch"><div class="page-num-overlay" id="fixedNum4"></div></section>
+    <section class="page page-fixed bg-trustedby"><div class="page-num-overlay" id="fixedNum5"></div></section>
+    <section class="page page-fixed bg-recognized"></section>
+
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+<script>
+function val(id)   { return document.getElementById(id).value.trim(); }
+function lines(id) { return val(id).split(/\r?\n/).filter(Boolean); }
+
+/* ---- Dirty tracking: protect manual canvas edits ---- */
+const dirtyEls = new Set();
+
+function markDirtyListeners() {
+  const editableIds = [
+    'pTitle','pSubtitle','pDuration','pInsight','pDetSummary',
+    'pRegions','pDetDuration','pHours','pBenefits','pValue',
+    'pLocation','pDatetime','pObjective','pImpact'
+  ];
+  editableIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      dirtyEls.add(id);
+      el.title = 'Manually edited — form changes won\'t override this. Click "↺ Reset" to sync.';
+    });
+  });
+}
+
+function setHTML(id, html) {
+  if (dirtyEls.has(id)) return;
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+function setTEXT(id, text) {
+  if (dirtyEls.has(id)) return;
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+/* Add a small "↺ Sync" toolbar button on canvas to reset dirty state */
+function addSyncBtn() {
+  const canvas = document.getElementById('brochure');
+  const syncBar = document.createElement('div');
+  syncBar.id = 'syncBar';
+  syncBar.style.cssText = `
+    position: sticky; top: 70px; z-index: 100; display: none;
+    background: #fff3cd; border: 1px solid #ffc107;
+    border-radius: 8px; padding: 7px 14px; margin-bottom: 12px;
+    font-size: 12px; color: #856404; font-weight: 600;
+    align-items: center; gap: 10px; justify-content: space-between;
+  `;
+  syncBar.innerHTML = `<span>⚠ Some sections have manual edits — form changes won't override them.</span>
+    <button onclick="resetDirty()" style="background:#856404;color:#fff;border:none;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:11px;font-weight:700;">↺ Reset All</button>`;
+  canvas.parentElement.insertBefore(syncBar, canvas);
+}
+
+function resetDirty() {
+  dirtyEls.clear();
+  // Remove title attributes
+  ['pTitle','pSubtitle','pDuration','pInsight','pDetSummary',
+   'pRegions','pDetDuration','pHours','pBenefits','pValue',
+   'pLocation','pDatetime','pObjective','pImpact'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.removeAttribute('title');
+  });
+  document.getElementById('syncBar').style.display = 'none';
+  bind();
+}
+
+function checkSyncBar() {
+  const bar = document.getElementById('syncBar');
+  if (bar) bar.style.display = dirtyEls.size > 0 ? 'flex' : 'none';
+}
+
+
+function bold(str) {
+  if (!str) return '';
+  return str.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+}
+
+function toggleSec(btn) {
+  const body = btn.nextElementSibling;
+  const chev = btn.querySelector('.chevron');
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+function bind() {
+  bindCover();
+  bindInsight();
+  bindDetails();
+  bindObjective();
+  bindImpact();
+  bindModules();
+  updateAllPageNums();
+  checkSyncBar();
+}
+
+function updateAllPageNums() {
+  const modulePgCount = document.getElementById('dynamicModules').children.length || 1;
+
+  const insightPage   = 1;
+  const detailsPage   = 2;
+  const objectivePage = 3;
+  const impactPage    = 4;
+  const modulesPage   = 5;
+
+  const fixedStart = modulesPage + modulePgCount;
+
+  for (let i = 0; i <= 5; i++) {
+    const el = document.getElementById('fixedNum' + i);
+    if (el) el.textContent = 'Page ' + String(fixedStart + i).padStart(2, '0');
+  }
+
+  const tocInsight    = document.getElementById('tocInsight');
+  const tocObjective  = document.getElementById('tocObjective');
+  const tocImpact     = document.getElementById('tocImpact');
+  const tocModules    = document.getElementById('tocModules');
+  const tocPedagogy   = document.getElementById('tocPedagogy');
+  const tocEvaluation = document.getElementById('tocEvaluation');
+  const tocTrusted    = document.getElementById('tocTrusted');
+
+  if (tocInsight)    tocInsight.textContent    = String(insightPage).padStart(2, '0');
+  if (tocObjective)  tocObjective.textContent  = String(objectivePage).padStart(2, '0');
+  if (tocImpact)     tocImpact.textContent     = String(impactPage).padStart(2, '0');
+  if (tocModules)    tocModules.textContent    = String(modulesPage).padStart(2, '0');
+  if (tocPedagogy)   tocPedagogy.textContent   = String(fixedStart).padStart(2, '0');
+  if (tocEvaluation) tocEvaluation.textContent = String(fixedStart + 2).padStart(2, '0');
+  if (tocTrusted)    tocTrusted.textContent    = String(fixedStart + 5).padStart(2, '0');
+}
+
+function bindCover() {
+  const title    = val('f-title')    || 'TITLE NAME';
+  const subtitle = val('f-subtitle') || 'Subtitle goes here.';
+  const duration = val('f-duration') || '—';
+
+  setHTML('pTitle', escHtml(title) + '<span class="dot">.</span>');
+  setTEXT('pSubtitle', subtitle);
+  setTEXT('pDuration',  duration);
+}
+
+function bindInsight() {
+  if (dirtyEls.has('pInsight')) return;
+  const el = document.getElementById('pInsight');
+  el.innerHTML = '';
+  const raw = val('f-insight');
+  if (!raw) return;
+  raw.split(/\n\n+/).forEach(para => {
+    const p = document.createElement('p');
+    p.className = 'insight-para';
+    p.innerHTML = bold(escHtml(para.trim()).replace(/\n/g,'<br>'));
+    el.appendChild(p);
+  });
+}
+
+function bindDetails() {
+  setHTML('pDetSummary',   bold(escHtml(val('f-det-summary'))));
+  setTEXT('pRegions',      val('f-regions'));
+  setTEXT('pDetDuration',  val('f-det-duration'));
+  setTEXT('pHours',        val('f-hours'));
+  setTEXT('pBenefits',     val('f-benefits'));
+  setTEXT('pValue',        val('f-value'));
+  setTEXT('pLocation',     val('f-location'));
+  setTEXT('pDatetime',     val('f-datetime'));
+}
+
+function bindObjective() {
+  if (dirtyEls.has('pObjective')) return;
+  const el = document.getElementById('pObjective');
+  el.innerHTML = '';
+  const alpha = 'abcdefghijklmnopqrstuvwxyz';
+
+  const intro = val('f-obj-intro');
+  if (intro) {
+    const p = document.createElement('p');
+    p.className = 'obj-intro';
+    p.innerHTML = bold(escHtml(intro));
+    el.appendChild(p);
+  }
+
+  const objLines = lines('f-objectives');
+  if (objLines.length) {
+    const wrap = document.createElement('div');
+    wrap.className = 'obj-list';
+    objLines.forEach((line, i) => {
+      const sep   = line.indexOf('|');
+      const title = sep > -1 ? line.slice(0, sep).trim() : line.trim();
+      const desc  = sep > -1 ? line.slice(sep + 1).trim() : '';
+      const div = document.createElement('div');
+      div.className = 'obj-item';
+      div.innerHTML = `
+        <div class="obj-item-head">${alpha[i] || (i+1)}. ${escHtml(title)}</div>
+        ${desc ? `<div class="obj-item-desc">${bold(escHtml(desc))}</div>` : ''}
+      `;
+      wrap.appendChild(div);
+    });
+    el.appendChild(wrap);
+  }
+
+  const close = val('f-obj-close');
+  if (close) {
+    const p = document.createElement('p');
+    p.className = 'obj-closing';
+    p.innerHTML = bold(escHtml(close));
+    el.appendChild(p);
+  }
+}
+
+function bindImpact() {
+  if (dirtyEls.has('pImpact')) return;
+  const el = document.getElementById('pImpact');
+  el.innerHTML = '';
+
+  const intro = val('f-imp-intro');
+  if (intro) {
+    const p = document.createElement('p');
+    p.className = 'impact-intro';
+    p.innerHTML = bold(escHtml(intro));
+    el.appendChild(p);
+  }
+
+  const itemLines = lines('f-imp-items');
+  if (itemLines.length) {
+    const wrap = document.createElement('div');
+    itemLines.forEach(line => {
+      const sep   = line.indexOf('|');
+      const title = sep > -1 ? line.slice(0, sep).trim() : line.trim();
+      const desc  = sep > -1 ? line.slice(sep + 1).trim() : '';
+      const row = document.createElement('div');
+      row.className = 'impact-row';
+      row.innerHTML = `
+        <div class="impact-icon-box">
+          <svg class="impact-check" viewBox="0 0 24 24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div>
+          <div class="impact-row-title">${bold(escHtml(title))}</div>
+          ${desc ? `<div class="impact-row-desc">${bold(escHtml(desc))}</div>` : ''}
+        </div>
+      `;
+      wrap.appendChild(row);
+    });
+    el.appendChild(wrap);
+  }
+
+  const close = val('f-imp-close');
+  if (close) {
+    const p = document.createElement('p');
+    p.className = 'impact-closing';
+    p.innerHTML = bold(escHtml(close));
+    el.appendChild(p);
+  }
+}
+
+function bindModules() {
+  const container = document.getElementById('dynamicModules');
+  container.innerHTML = '';
+
+  const raw = val('f-modules');
+  if (!raw) return;
+
+  const modules = raw.split(/\r?\n/).filter(Boolean).map((line, i) => {
+    const parts  = line.split('|');
+    const name   = (parts[0] || '').trim();
+    const topics = (parts[1] || '').split(';').map(s => s.trim()).filter(Boolean);
+    const exs    = (parts[2] || '').split(';').map(s => s.trim()).filter(Boolean);
+    return { sno: String(i + 1).padStart(2, '0'), name, topics, exs };
+  });
+
+  function mkRowInner(mod) {
+    const topHtml = mod.topics.length
+      ? `<ul>${mod.topics.map(t => `<li>${bold(escHtml(t))}</li>`).join('')}</ul>` : '';
+    const exHtml  = mod.exs.length
+      ? `<ul>${mod.exs.map(e => `<li>${bold(escHtml(e))}</li>`).join('')}</ul>` : '';
+    return `
+      <td class="col-sno">${mod.sno}</td>
+      <td class="col-mod">${escHtml(mod.name)}</td>
+      <td class="col-top">${topHtml}</td>
+      <td class="col-ex">${exHtml}</td>
+    `;
+  }
+
+  const USABLE  = 686;
+  const THEAD_H = 42;
+
+  const ghost = document.createElement('div');
+  ghost.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;left:-9999px;top:0;width:674px;';
+  const ghostTable = document.createElement('table');
+  ghostTable.className = 'mod-table';
+  ghostTable.style.width = '100%';
+  const ghostTbody = document.createElement('tbody');
+  ghostTable.appendChild(ghostTbody);
+  ghost.appendChild(ghostTable);
+  document.body.appendChild(ghost);
+
+  const ghostRows = modules.map(mod => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = mkRowInner(mod);
+    ghostTbody.appendChild(tr);
+    return tr;
+  });
+
+  void ghost.getBoundingClientRect();
+  const heights = ghostRows.map(tr => tr.offsetHeight);
+  document.body.removeChild(ghost);
+
+  function mkPage() {
+    const sec = document.createElement('section');
+    sec.className = 'page page-fixed bg-modules';
+    const wrap = document.createElement('div');
+    wrap.className = 'modules-wrap';
+    const table = document.createElement('table');
+    table.className = 'mod-table';
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th class="col-sno">Sno.</th>
+          <th class="col-mod">Modules</th>
+          <th class="col-top">Topics</th>
+          <th class="col-ex">Exercises</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    wrap.appendChild(table);
+    sec.appendChild(wrap);
+    return { sec, tbody: table.querySelector('tbody') };
+  }
+
+  let { sec: curSec, tbody: curBody } = mkPage();
+  let usedH = THEAD_H;
+  let modulePageNum = 5;
+
+  function attachPageNum(sec, num) {
+    const d = document.createElement('div');
+    d.className = 'page-num-overlay';
+    d.textContent = 'Page ' + String(num).padStart(2, '0');
+    sec.appendChild(d);
+  }
+
+  modules.forEach((mod, i) => {
+    const rh = heights[i] || 80;
+    if (usedH + rh > USABLE && usedH > THEAD_H) {
+      attachPageNum(curSec, modulePageNum++);
+      container.appendChild(curSec);
+      const next = mkPage();
+      curSec  = next.sec;
+      curBody = next.tbody;
+      usedH   = THEAD_H;
+    }
+    const tr = document.createElement('tr');
+    tr.innerHTML = mkRowInner(mod);
+    curBody.appendChild(tr);
+    usedH += rh;
+  });
+
+  attachPageNum(curSec, modulePageNum);
+  container.appendChild(curSec);
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+document.getElementById('fillSample').addEventListener('click', () => {
+  document.getElementById('f-title').value    = 'Next-Gen Leadership';
+  document.getElementById('f-subtitle').value = 'Building confident, future-ready supervisors.';
+  document.getElementById('f-duration').value = '2 Days';
+
+  document.getElementById('f-insight').value =
+`This programme is designed for **professionals who are ready to move forward in their careers.** Whether your goal is to **strengthen a critical skill, prepare for greater responsibilities,** or bring more value to your organisation, the learning experience is built to support meaningful and practical growth.
+
+Every session is **designed around real-world challenges** so participants can apply what they learn immediately at work. Every element of the programme is grounded in real-world application and delivered by experienced practitioners who understand the environments where important decisions are made. Instead of focusing only on theory, **the programme emphasises practical insights, frameworks, and discussions** that professionals can directly connect to their day-to-day responsibilities.
+
+From the very first session, participants are encouraged to engage actively in the learning process. The programme moves beyond passive listening and creates space for reflection, dialogue, and problem-solving around real workplace scenarios. This ensures that learning remains engaging, relevant, and aligned with professional needs.
+
+The programme is **shaped by real industry experience** and years of collaboration with organisations across diverse markets. Every framework, case study, and conversation reflects the complexity and pace of modern professional environments.
+
+Over the years, **thousands of professionals from emerging leaders to experienced practitioners have participated in this journey.** What connects them is a shared goal: to build capabilities that create lasting impact within their teams and organisations.`;
+
+  document.getElementById('f-det-summary').value =
+`**By the end of the programme, participants leave with a sharper perspective, stronger professional confidence, and a practical toolkit they can use immediately.** The goal is not only personal development but also meaningful contribution to the teams, departments, and organisations participants are part of.`;
+
+  document.getElementById('f-regions').value      = 'UAE, Kingdom of Saudi Arabia, Africa, MENA, and Europe; delivering consistent, high-quality learning experiences across borders and industries';
+  document.getElementById('f-det-duration').value = '2 Days of focused, structured, and immersive professional development';
+  document.getElementById('f-hours').value        = '16 Hours of facilitated, hands-on, and application-driven training';
+  document.getElementById('f-benefits').value     = 'Participants walk away with sharper skills, greater self-awareness, and the confidence to lead, decide, and deliver at a higher level starting from day one back at work';
+  document.getElementById('f-value').value        = 'Beyond individual growth, this programme creates a ripple effect across teams and departments improving collaboration, driving performance, and contributing directly to organisational outcomes that matter';
+  document.getElementById('f-location').value     = '[Venue Name], [City] / Available Online via Virtual Classroom for remote and regional participants';
+  document.getElementById('f-datetime').value     = '[Date] | [Start Time] — [End Time]';
+
+  document.getElementById('f-obj-intro').value =
+    'Effective leadership combines self-awareness, strong communication, and emotional intelligence to guide teams, build trust, and drive shared success.';
+
+  document.getElementById('f-objectives').value =
+`Self-Awareness in Leadership | Understand your leadership style, strengths, and areas for improvement to lead with authenticity and effectiveness.
+Balancing Management and Leadership | Distinguish between managing tasks and leading people while maintaining operational efficiency and team engagement.
+Effective Communication Skills | Practice active listening, provide constructive feedback, and use clear and persuasive communication to create team alignment.
+Trust Building and Team Motivation | Develop strong relationships, encourage collaboration, recognize individual contributions, and understand team motivations to inspire high performance.
+Strategic Thinking and Adaptability | Apply structured problem-solving, critical thinking, emotional intelligence, and resilience to handle challenges, support innovation, and drive continuous growth.`;
+
+  document.getElementById('f-obj-close').value =
+    'Strong leadership combines self-awareness, effective communication, and the ability to empower others. By building trust, delegating responsibilities, and applying critical thinking, leaders can guide teams with confidence and clarity.';
+
+  document.getElementById('f-imp-intro').value =
+    'Every dirham spent on developing your people has the potential to come back tenfold in performance, productivity, retention, and competitive advantage. At Learners Point, we design our programmes with outcomes in mind, ensuring that the value your organisation gains extends far beyond the training room.';
+
+  document.getElementById('f-imp-items').value =
+`Measurable performance improvement | participants return to the workplace with sharper skills, clearer thinking, and the ability to deliver results more effectively from day one
+Reduced operational costs | better-trained teams make fewer errors, resolve challenges faster, and require less supervisory intervention over time.
+Higher employee retention | professionals who feel invested in are professionals who stay; training signals that your organisation values its people.
+Stronger leadership pipeline | developing talent from within reduces the cost and risk of external hiring at senior levels.
+Enhanced team productivity | when individuals grow, teams grow with them; the ripple effect of one trained professional is felt across the entire department.
+Improved organisational reputation | a workforce built on recognised credentials and demonstrated competency positions your organisation as an industry leader.`;
+
+  document.getElementById('f-imp-close').value =
+    'Sustainable competitive advantage in a rapidly evolving business landscape — the organisations that invest in continuous learning are the ones that stay ahead.';
+
+  document.getElementById('f-modules').value =
+`Understanding Leadership vs. Management | Differentiate managing tasks vs. leading people; Understand leadership styles and their impact; Evaluate your current leadership approach; Know when to lead vs. manage operations; Learn the importance of vision and influence in leadership | Leadership style self-assessment.; Identify strengths and growth areas using a case study.; Team leadership role-play scenarios.; Discussion: Compare leadership styles of famous leaders.; Reflection: Journal on a personal leadership challenge and solution.
+Emotional Intelligence & Leadership | Understand self-awareness, self-regulation, empathy, and social skills.; Learn how emotions affect decision-making and team dynamics.; Identify ways to build trust and rapport with team members.; Recognize triggers that reduce emotional effectiveness | EI self-assessment with reflection.; Handling a difficult team scenario role-play.; Peer feedback on emotional responses in leadership situations.; Mindfulness exercise to improve self-regulation.; Group discussion: Strategies to improve empathy within teams
+Effective Communication and Influence | Develop active listening skills for better understanding.; Learn persuasive communication techniques to influence outcomes.; Practice giving and receiving constructive feedback.; Understand verbal and non-verbal communication cues.; Learn to communicate vision and goals effectively to teams. | Mock team meetings with feedback sessions.; Communication role-play to resolve conflicts.; Crafting an impactful message exercise.; Group exercise: Rewriting a miscommunicated message effectively.; Peer review: Evaluate communication clarity and tone
+Delegation, Empowerment, & Accountability | Learn to delegate tasks strategically to develop team members.; Understand the balance between empowerment and accountability.; Identify tasks that should or should not be delegated.; Foster ownership and responsibility within the team. | Delegation planning for a real task.; Team empowerment scenario discussions.; Accountability role-play with constructive feedback.; **Case study:** Delegation pitfalls and how to avoid them.; Reflection: Personal delegation plan for the week.
+Motivation and Engagement | Learn what drives individual and team motivation.; Explore techniques for sustaining high engagement levels.; Understand intrinsic vs extrinsic motivation.; Recognize early signs of disengagement in teams. | Design a mini engagement plan for your team.; Recognition and reward role-play.; Problem-solving for team disengagement cases.; **Brainstorm session:** Creative ways to boost morale.; Reflection: Personal action plan to improve team motivation
+Decision-Making and Problem Solving | Learn critical thinking frameworks and structured problem-solving techniques.; Analyze complex workplace problems systematically.; Weigh options and assess risk before making decisions.; Develop strategies for quick, effective decision-making under pressure. | Analyze a complex workplace problem in groups.; Create an action plan using a decision matrix.; Scenario-based problem-solving challenge.; Group debate: Best solution for a real-life business dilemma.; Reflection: Personal decision-making style assessment
+Leading Through Change and Uncertainty | Understand adaptive leadership principles.; Learn change management strategies to guide teams.; Build resilience for yourself and your team.; Identify ways to communicate change effectively. | Case study on change management.; Personal resilience action plan.; Team scenario: Leading through uncertainty.; Role-play: Communicating a major change to the team.; Reflection: How to overcome resistance to change.
+Action Planning for Growth | Translate learning into practical leadership actions.; Create a roadmap for continued leadership development.; Set measurable leadership goals for the next 3–6 months.; Develop strategies to track progress and sustain improvements | Personal leadership development plan creation.; Peer coaching session.; Commitment to implement 3 key leadership practices in the next 30 days.; Group discussion: Sharing leadership growth goals and accountability partners.; Reflection: Identify three immediate actions to enhance leadership impact`;
+
+  bind();
+});
+
+document.getElementById('clearAll').addEventListener('click', () => {
+  document.querySelectorAll('#formPanel input, #formPanel textarea')
+    .forEach(el => el.value = '');
+  bind();
+});
+
+document.getElementById('fontSelector').addEventListener('change', function () {
+  document.getElementById('brochure').style.fontFamily = this.value;
+});
+
+document.getElementById('uploadWordBtn').addEventListener('click', () =>
+  document.getElementById('uploadWord').click());
+
+document.getElementById('uploadWord').addEventListener('change', async function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.name.endsWith('.docx')) { alert('Please upload a .docx file'); return; }
+  try {
+    const buf = await file.arrayBuffer();
+    const res = await mammoth.extractRawText({ arrayBuffer: buf });
+    const txt = res.value;
+    const firstLine = txt.split('\n').find(l => l.trim());
+    if (firstLine) document.getElementById('f-title').value = firstLine.trim();
+    bind();
+    alert('✅ Word file loaded — please review and adjust fields.');
+  } catch(err) {
+    alert('❌ Could not parse Word file: ' + err.message);
+  }
+  e.target.value = '';
+});
+
+document.getElementById('exportPdf').addEventListener('click', () => {
+  const modal = document.getElementById('exportModal');
+  modal.style.display = 'flex';
+  requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('shown')));
+});
+
+document.getElementById('modalCancel').addEventListener('click', () => {
+  const modal = document.getElementById('exportModal');
+  modal.classList.remove('shown');
+  setTimeout(() => modal.style.display = 'none', 250);
+});
+
+document.getElementById('modalPrint').addEventListener('click', () => {
+  const modal = document.getElementById('exportModal');
+  modal.classList.remove('shown');
+  setTimeout(() => { modal.style.display = 'none'; window.print(); }, 250);
+});
+
+document.getElementById('exportModal').addEventListener('click', function(e) {
+  if (e.target === this) document.getElementById('modalCancel').click();
+});
+
+/* ============================================================
+   CANVA-STYLE RICH TEXT TOOLBAR
+   ============================================================ */
+(function () {
+  const toolbar   = document.getElementById('richToolbar');
+  const canvas    = document.getElementById('brochure');
+  const sizeLabel = document.getElementById('rtFontSize');
+
+  let savedRange  = null;
+  let isToolbarMousedown = false;
+
+  function isInCanvas(node) {
+    return canvas && canvas.contains(node);
+  }
+
+  function getSelectionFontSize() {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return null;
+    const range = sel.getRangeAt(0);
+    let node = range.startContainer;
+    if (node.nodeType === 3) node = node.parentElement;
+    if (!node || !isInCanvas(node)) return null;
+    return Math.round(parseFloat(window.getComputedStyle(node).fontSize)) || 14;
+  }
+
+  function updateToolbarState() {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount || sel.isCollapsed) return;
+    const sz = getSelectionFontSize();
+    if (sz) sizeLabel.textContent = sz;
+    // bold state
+    document.getElementById('rtBold').classList.toggle('rt-active', document.queryCommandState('bold'));
+    document.getElementById('rtItalic').classList.toggle('rt-active', document.queryCommandState('italic'));
+    document.getElementById('rtUnderline').classList.toggle('rt-active', document.queryCommandState('underline'));
+  }
+
+  function positionToolbar() {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount || sel.isCollapsed) { hideToolbar(); return; }
+    const range = sel.getRangeAt(0);
+    if (!isInCanvas(range.commonAncestorContainer)) { hideToolbar(); return; }
+
+    const rect = range.getBoundingClientRect();
+    if (!rect || rect.width === 0) { hideToolbar(); return; }
+
+    toolbar.style.left = (rect.left + rect.width / 2) + 'px';
+    toolbar.style.top  = (rect.top + window.scrollY - toolbar.offsetHeight - 12) + 'px';
+    toolbar.classList.add('visible');
+    updateToolbarState();
+  }
+
+  function hideToolbar() {
+    if (!isToolbarMousedown) toolbar.classList.remove('visible');
+  }
+
+  function wrapSelectionWithFontSize(newSize) {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount || sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+    if (!isInCanvas(range.commonAncestorContainer)) return;
+
+    // Try to unwrap existing font-size span if it's a simple selection
+    try {
+      const span = document.createElement('span');
+      span.style.fontSize = newSize + 'px';
+      span.style.lineHeight = '1.4';
+      range.surroundContents(span);
+      // Re-select the new span content
+      const newRange = document.createRange();
+      newRange.selectNodeContents(span);
+      sel.removeAllRanges();
+      sel.addRange(newRange);
+      sizeLabel.textContent = newSize;
+    } catch(e) {
+      // Complex selection fallback: use execCommand fontSize (approximate)
+      document.execCommand('fontSize', false, '7');
+      const fontEls = canvas.querySelectorAll('font[size="7"]');
+      fontEls.forEach(el => {
+        const sp = document.createElement('span');
+        sp.style.fontSize = newSize + 'px';
+        sp.innerHTML = el.innerHTML;
+        el.parentNode.replaceChild(sp, el);
+      });
+      sizeLabel.textContent = newSize;
+    }
+  }
+
+  // selectionchange fires frequently — debounce toolbar positioning
+  let selTimer = null;
+  document.addEventListener('selectionchange', () => {
+    clearTimeout(selTimer);
+    selTimer = setTimeout(positionToolbar, 80);
+  });
+
+  // Toolbar mousedown — prevent focus loss
+  toolbar.addEventListener('mousedown', (e) => {
+    e.preventDefault(); // keep selection alive
+    isToolbarMousedown = true;
+  });
+  toolbar.addEventListener('mouseup', () => {
+    isToolbarMousedown = false;
+  });
+
+  // Bold
+  document.getElementById('rtBold').addEventListener('click', () => {
+    document.execCommand('bold', false, null);
+    updateToolbarState();
+  });
+
+  // Italic
+  document.getElementById('rtItalic').addEventListener('click', () => {
+    document.execCommand('italic', false, null);
+    updateToolbarState();
+  });
+
+  // Underline
+  document.getElementById('rtUnderline').addEventListener('click', () => {
+    document.execCommand('underline', false, null);
+    updateToolbarState();
+  });
+
+  // Align left
+  document.getElementById('rtAlignLeft').addEventListener('click', () => {
+    document.execCommand('justifyLeft', false, null);
+  });
+
+  // Align center
+  document.getElementById('rtAlignCenter').addEventListener('click', () => {
+    document.execCommand('justifyCenter', false, null);
+  });
+
+  // Color picker
+  document.getElementById('rtColor').addEventListener('input', function() {
+    document.execCommand('foreColor', false, this.value);
+  });
+
+  // Font size increase
+  document.getElementById('rtIncrease').addEventListener('click', () => {
+    const cur = parseInt(sizeLabel.textContent) || 14;
+    wrapSelectionWithFontSize(cur + 1);
+  });
+
+  // Font size decrease
+  document.getElementById('rtDecrease').addEventListener('click', () => {
+    const cur = parseInt(sizeLabel.textContent) || 14;
+    if (cur > 6) wrapSelectionWithFontSize(cur - 1);
+  });
+
+  // Hide toolbar on click outside canvas
+  document.addEventListener('mousedown', (e) => {
+    if (!canvas.contains(e.target) && !toolbar.contains(e.target)) {
+      hideToolbar();
+    }
+  });
+
+  // Keyboard shortcut support inside canvas (Ctrl+B etc already work via contenteditable)
+  canvas.addEventListener('keyup', updateToolbarState);
+
+})();
+
+document.getElementById('formPanel').addEventListener('input', bind);
+
+addSyncBtn();
+markDirtyListeners();
+bind();
+</script>
+</body>
+</html>
